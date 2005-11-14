@@ -1,0 +1,100 @@
+NAME
+    Catalyst::Plugin::Session::State::URI - Saves session IDs by rewriting
+    URIs delivered to the client, and extracting the session ID from
+    requested URIs.
+
+SYNOPSIS
+        use Catalyst qw/Session Session::State::URI Session::Store::Foo/;
+
+DESCRIPTION
+    In order for Catalyst::Plugin::Session to work the session ID needs to
+    be stored on the client, and the session data needs to be stored on the
+    server.
+
+    This plugin cheats and instead of storing the session id on the client,
+    it simply embeds the session id into every URI sent to the user.
+
+METHODS
+    session_should_rewrite
+        This method is consulted by "finalize". The body will be rewritten
+        only if it returns a true value.
+
+        In the future this may be conditional based on the type of the body,
+        or other factors. For now it returns true, and it's separate so that
+        you can overload it.
+
+    session_should_rewrite_uri $uri_obj, $uri_text
+        This method is called from the URI::Find callback to determine
+        whether a URI should be rewritten.
+
+        It will return true for URIs that point under "$c-"req->base), which
+        do not
+
+    uri_with_sessionid $uri_text
+        This method takes any URI string and appends "/-/$sessionid" to it.
+
+        have the string "/-/" in them yet.
+
+EXTENDED METHODS
+    prepare_action
+        Will restore the session if the request URI is formatted
+        accordingly, and rewrite the URI to remove the additional part.
+
+    finalize
+        If "session_should_rewrite" returns a true value, URI::Find is used
+        to replace all URLs which point to "$c->request->base" so that they
+        contain the session ID.
+
+CAVEATS
+  Session Hijacking
+    URI sessions are very prone to session hijacking problems.
+
+    Make sure your users know not to copy and paste URIs to prevent these
+    problems, and always provide a way to safely link to public resources.
+
+    Also make sure to never link to external sites without going through a
+    gateway page that does not have session data in it's URI, so that the
+    external site doesn't get any session IDs in the http referrer header.
+
+    Due to these issues this plugin should be used as a last resort, as
+    Catalyst::Plugin::Session::State::Cookie is more appropriate 99% of the
+    time.
+
+    Take a look at the IP address limiting features in
+    Catalyst::Plugin::Session to see make some of these problems less
+    dangerous.
+
+   Goodbye page recipe
+    To exclude some sections of your application, like a goodbye page (see
+    "CAVEATS") you should make extend the "session_should_rewrite_uri"
+    method to return true if the URI does not point to the goodbye page,
+    extend "prepare_action" to not rewrite URIs that match "/-/" (so that
+    external URIs with that in their path as a parameter to the goodbye page
+    will not be destroyed) and finally extend "uri_with_sessionid" to
+    rewrite URIs with the following logic:
+
+    *   URIs that match "/^$base/" are appended with session data (
+        "$c->NEXT::uri_with_sessionid").
+
+    *   External URIs (everything else) should be prepended by the goodbye
+        page. (e.g.
+        "http://yourapp/link/http://the_url_of_whatever/foo.html").
+
+    But note that this behavior will be problematic when you are e.g.
+    submitting POSTs to forms on external sites.
+
+SEE ALSO
+    Catalyst, Catalyst::Plugin::Session,
+    Catalyst::Plugin::Session::FastMmap, "URI::Find".
+
+AUTHORS
+    This module is derived from Catalyst::Plugin::Session::FastMmap code,
+    and has been heavily modified since.
+
+    Andrew Ford Andy Grundman Christian Hansen Yuval Kogman,
+    "nothingmuch@woobling.org" Marcus Ramberg Sebastian Riedel
+
+COPYRIGHT
+    This program is free software, you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
