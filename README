@@ -6,6 +6,11 @@ NAME
 SYNOPSIS
         use Catalyst qw/Session Session::State::URI Session::Store::Foo/;
 
+        # If you want the param style rewriting, set the parameter
+        MyApp->config->{session} = {
+            param   => 'sessionid', # or whatever you like
+        };
+
 DESCRIPTION
     In order for Catalyst::Plugin::Session to work the session ID needs to
     be stored on the client, and the session data needs to be stored on the
@@ -19,21 +24,28 @@ METHODS
         This method is consulted by "finalize". The body will be rewritten
         only if it returns a true value.
 
-        In the future this may be conditional based on the type of the body,
-        or other factors. For now it returns true, and it's separate so that
+        It will read "$c->config->{session}{rewrite}" which will be set 1 at
+        first if not defined. In the future this may be conditional based on
+        the type of the body, or other factors. And it's separate so that
         you can overload it.
 
-    session_should_rewrite_uri $uri_obj, $uri_text
-        This method is called from the URI::Find callback to determine
-        whether a URI should be rewritten.
+    session_should_rewrite_uri $uri_text
+        This method is to determine whether a URI should be rewritten.
 
-        It will return true for URIs that point under "$c-"req->base), which
-        do not
+        It will return true for URIs under "$c->req->base", and it will also
+        use MIME::Types to filter the links which point to png, pdf and etc
+        with the file extension.
 
     uri_with_sessionid $uri_text
-        This method takes any URI string and appends "/-/$sessionid" to it.
+        By path style rewriting, it will appends "/-/$sessionid" to the uri
+        path.
 
-        have the string "/-/" in them yet.
+        http://myapp/link -> http://myapp/link/-/$sessionid
+
+        By param style rewriting, it will add a parameter key/value pair
+        after the uri path.
+
+        http://myapp/link -> http://myapp/link?$param=$sessionid
 
 EXTENDED METHODS
     prepare_action
@@ -41,9 +53,10 @@ EXTENDED METHODS
         accordingly, and rewrite the URI to remove the additional part.
 
     finalize
-        If "session_should_rewrite" returns a true value, URI::Find is used
-        to replace all URLs which point to "$c->request->base" so that they
-        contain the session ID.
+        If "session_should_rewrite" returns a true value,
+        HTML::TokePaser::Simple is used to traverse the body to replace all
+        URLs which get true returned by "session_should_rewrite_uri" so that
+        they contain the session ID.
 
 CAVEATS
   Session Hijacking
@@ -78,21 +91,26 @@ CAVEATS
 
     *   External URIs (everything else) should be prepended by the goodbye
         page. (e.g.
-        "http://yourapp/link/http://the_url_of_whatever/foo.html").
+        "http://myapp/link/http://the_url_of_whatever/foo.html").
 
     But note that this behavior will be problematic when you are e.g.
     submitting POSTs to forms on external sites.
 
 SEE ALSO
-    Catalyst, Catalyst::Plugin::Session,
-    Catalyst::Plugin::Session::FastMmap, "URI::Find".
+    Catalyst, Catalyst::Plugin::Session,Catalyst::Plugin::Session::FastMmap
+    "HTML::TokeParser::Simple", "MIME::Types".
 
 AUTHORS
     This module is derived from Catalyst::Plugin::Session::FastMmap code,
     and has been heavily modified since.
 
-    Andrew Ford Andy Grundman Christian Hansen Yuval Kogman,
-    "nothingmuch@woobling.org" Marcus Ramberg Sebastian Riedel
+    Andrew Ford
+    Andy Grundman
+    Christian Hansen
+    Yuval Kogman, "nothingmuch@woobling.org"
+    Marcus Ramberg
+    Sebastian Riedel
+    Hu Hailin
 
 COPYRIGHT
     This program is free software, you can redistribute it and/or modify it

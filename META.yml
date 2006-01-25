@@ -1,6 +1,6 @@
 ---
 name: Catalyst-Plugin-Session-State-URI
-version: 0.01
+version: 0.02
 author: ~
 abstract: |-
   Saves session IDs by rewriting URIs
@@ -8,11 +8,13 @@ abstract: |-
 license: perl
 requires:
   Catalyst::Plugin::Session: 0.01
+  HTML::TokeParser::Simple: 0
+  MIME::Types: 0
   Test::MockObject: 1.01
-  URI::Escape: 0
-  URI::Find: 0.13
+  URI: 0
+  URI::QueryParam: 0
 provides:
   Catalyst::Plugin::Session::State::URI:
     file: lib/Catalyst/Plugin/Session/State/URI.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2611

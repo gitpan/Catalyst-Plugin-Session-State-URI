@@ -4,53 +4,142 @@ use base qw/Catalyst::Plugin::Session::State/;
 use strict;
 use warnings;
 
+use HTML::TokeParser::Simple;
+use MIME::Types;
 use NEXT;
-use URI::Find;
-use URI::Escape ();
+use URI;
+use URI::QueryParam;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
+
+sub setup_session {
+    my $c = shift();
+
+    $c->NEXT::setup_session(@_);
+    unless ( exists( $c->config->{session}{rewrite} ) ) {
+        $c->config->{session}{rewrite} = 1;
+    }
+}
 
 sub finalize {
     my $c = shift;
 
     if ( $c->session_should_rewrite ) {
         if ( $c->response->body and my $sid = $c->sessionid ) {
-            URI::Find->new(
-                sub {
-                    my ( $uri_obj, $found_text ) = @_;
-                    $c->session_should_rewrite_uri( $uri_obj, $found_text )
-                      ? $c->uri_with_sessionid($found_text)
-                      : $found_text;
+            my $p =
+              HTML::TokeParser::Simple->new( string => $c->response->body );
+            my $body = '';
+            while ( my $token = $p->get_token ) {
+
+                # deal with <a href="">
+                if ( $token->is_start_tag('a') ) {
+                    my $href = $token->get_attr('href');
+                    $href = $c->uri_with_sessionid($href)
+                      if $c->session_should_rewrite_uri($href);
+                    $token->set_attr( 'href', $href );
                 }
-            )->find( \$c->response->{body} );
+
+                # deal with <form action="">
+                if ( $token->is_start_tag('form') ) {
+                    my $action = $token->get_attr('action');
+                    $action = $c->uri_with_sessionid($action)
+                      if $c->session_should_rewrite_uri($action);
+                    $token->set_attr( 'action', $action );
+                }
+                $body .= $token->as_is;
+            }
+            $c->response->body($body);
         }
     }
 
     return $c->NEXT::finalize(@_);
 }
 
-sub session_should_rewrite { 1 }
+sub session_should_rewrite {
+    my $c = shift();
+
+    return $c->config->{session}{rewrite};
+}
 
 sub uri_with_sessionid {
     my ( $c, $uri ) = @_;
-    return join( "/-/", $uri, URI::Escape::uri_escape( $c->sessionid ) );
+
+    my $uri_obj = eval { URI->new($uri) } || return $uri;
+
+    return $c->config->{session}{param}
+      ? $c->uri_with_param_sessionid($uri_obj)
+      : $c->uri_with_path_sessionid($uri_obj);
+}
+
+sub uri_with_param_sessionid {
+    my ( $c, $uri_obj ) = @_;
+
+    my $param_name = $c->config->{session}{param};
+
+    $uri_obj->query_param( $param_name => $c->sessionid );
+
+    return $uri_obj;
+}
+
+sub uri_with_path_sessionid {
+    my ( $c, $uri_obj ) = @_;
+
+    $uri_obj->path( join( "/-/", $uri_obj->path, $c->sessionid ) );
+
+    return $uri_obj;
 }
 
 sub session_should_rewrite_uri {
-    my ( $c, $uri_obj, $uri_text ) = @_;
+    my ( $c, $uri_text ) = @_;
 
-    return
-      index( $uri_text, $c->request->base ) == 0 # if URI is pointing to our app
-      && ( $uri_obj->path !~ m#/-/# );    # and it isn't already rewritten
+    my $uri_obj = eval { URI->new($uri_text) } || return;
+
+    # ignore the url outside
+    my $rel = $uri_obj->abs( $c->request->base );
+    return unless index( $rel, $c->request->base ) == 0;
+
+    # ignore media type such as gif, pdf and etc
+    if ( $rel =~ m#\.(\w+)(?:\?|$)# ) {
+        my $mt = new MIME::Types->mimeTypeOf($1);
+        return
+          if ref $mt && ( $mt->isBinary || $mt->mediaType eq 'text' );
+    }
+
+    if ( my $param = $c->config->{session}{param} )
+    {    # use param style rewriting
+
+        # if the URI query string doesn't contain $param
+        return not defined $uri_obj->query_param($param);
+
+    } else {    # use path style rewriting
+
+        # if the URI isn't already rewritten
+        return $uri_obj->path !~ m#/-/#;
+
+    }
 }
 
 sub prepare_action {
     my $c = shift;
 
-    if ( $c->request->path =~ m#^ (?: (.*) / )? -/ (.+) $#x ) {
-        $c->request->path( defined $1 ? $1 : "" );
-        $c->sessionid($2);
-        $c->log->debug(qq/Found sessionid "$2" in uri/) if $c->debug;
+    if ( my $param = $c->config->{session}{param} )
+    {           # use param style rewriting
+
+        if ( my $sid = $c->request->param($param) ) {
+            $c->sessionid($sid);
+            $c->log->debug(qq/Found sessionid "$sid" in query parameters/)
+              if $c->debug;
+        }
+
+    } else {    # use path style rewriting
+
+        if ( $c->request->path =~ m{^ (?: (.*) / )? -/ (.+) $}x ) {
+            $c->request->path( defined $1 ? $1 : "" );
+            $c->sessionid($2);
+            $c->log->debug(qq/Found sessionid "$2" in uri path/)
+              if $c->debug;
+        }
+
     }
 
     $c->NEXT::prepare_action(@_);
@@ -71,6 +160,11 @@ delivered to the client, and extracting the session ID from requested URIs.
 
     use Catalyst qw/Session Session::State::URI Session::Store::Foo/;
 
+    # If you want the param style rewriting, set the parameter
+    MyApp->config->{session} = {
+        param   => 'sessionid', # or whatever you like
+    };
+
 =head1 DESCRIPTION
 
 In order for L<Catalyst::Plugin::Session> to work the session ID needs to be
@@ -88,22 +182,25 @@ simply embeds the session id into every URI sent to the user.
 This method is consulted by C<finalize>. The body will be rewritten only if it
 returns a true value.
 
+It will read C<$c-E<gt>config-E<gt>{session}{rewrite}> which will be set 1 at first if not defined.
 In the future this may be conditional based on the type of the body, or other
-factors. For now it returns true, and it's separate so that you can overload
-it.
+factors. And it's separate so that you can overload it.
 
-=item session_should_rewrite_uri $uri_obj, $uri_text
+=item session_should_rewrite_uri $uri_text
 
-This method is called from the L<URI::Find> callback to determine whether a URI
-should be rewritten.
+This method is to determine whether a URI should be rewritten.
 
-It will return true for URIs that point under C<$c->req->base), which do not
+It will return true for URIs under C<$c-E<gt>req-E<gt>base>, and it will also use L<MIME::Types> to filter the links which point to png, pdf and etc with the file extension.
 
 =item uri_with_sessionid $uri_text
 
-This method takes any URI B<string> and appends C</-/$sessionid> to it.
+By path style rewriting, it will appends C</-/$sessionid> to the uri path.
 
-have the string C</-/> in them yet.
+http://myapp/link -> http://myapp/link/-/$sessionid
+
+By param style rewriting, it will add a parameter key/value pair after the uri path.
+
+http://myapp/link -> http://myapp/link?$param=$sessionid
 
 =back
 
@@ -118,8 +215,8 @@ rewrite the URI to remove the additional part.
 
 =item finalize
 
-If C<session_should_rewrite> returns a true value, L<URI::Find> is used to
-replace all URLs which point to C<< $c->request->base >> so that they contain
+If C<session_should_rewrite> returns a true value, L<HTML::TokePaser::Simple> is used to
+traverse the body to replace all URLs which get true returned by C<session_should_rewrite_uri> so that they contain
 the session ID.
 
 =back
@@ -164,7 +261,7 @@ C<< $c->NEXT::uri_with_sessionid >>).
 =item *
 
 External URIs (everything else) should be prepended by the goodbye page. (e.g.
-C<http://yourapp/link/http://the_url_of_whatever/foo.html>).
+C<http://myapp/link/http://the_url_of_whatever/foo.html>).
 
 =back
 
@@ -173,20 +270,27 @@ POSTs to forms on external sites.
 
 =head1 SEE ALSO
 
-L<Catalyst>, L<Catalyst::Plugin::Session>,
-L<Catalyst::Plugin::Session::FastMmap>, C<URI::Find>.
+L<Catalyst>, L<Catalyst::Plugin::Session>,L<Catalyst::Plugin::Session::FastMmap>
+C<HTML::TokeParser::Simple>, C<MIME::Types>.
 
 =head1 AUTHORS
 
 This module is derived from L<Catalyst::Plugin::Session::FastMmap> code, and
 has been heavily modified since.
 
-Andrew Ford
-Andy Grundman
-Christian Hansen
-Yuval Kogman, C<nothingmuch@woobling.org>
-Marcus Ramberg
-Sebastian Riedel
+=item Andrew Ford
+
+=item Andy Grundman
+
+=item Christian Hansen
+
+=item Yuval Kogman, C<nothingmuch@woobling.org>
+
+=item Marcus Ramberg
+
+=item Sebastian Riedel
+
+=item Hu Hailin
 
 =head1 COPYRIGHT
 

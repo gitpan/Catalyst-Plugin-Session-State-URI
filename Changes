@@ -1,0 +1,10 @@
+Revision history for Perl extension Catalyst::Plugin::Session::State::URI
+
+0.02    2006-01-20 17:30
+        - Rewriting is optional (gphat)
+        - Support relative uri rewriting
+        - Support parameter style rewriting
+        - Filter mime types of binary and text
+
+0.01    2005-11-14 12:41:00
+        - Initial release.

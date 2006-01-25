@@ -3,9 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 29;
+use Test::More tests => 40;
 use Test::MockObject::Extends;
-use URI::Find;
+use URI;
 
 my $m;
 BEGIN { use_ok( $m = "Catalyst::Plugin::Session::State::URI" ) }
@@ -19,22 +19,29 @@ BEGIN { use_ok( $m = "Catalyst::Plugin::Session::State::URI" ) }
 }
 
 my $req = Test::MockObject::Extends->new( HashObj->new );
-$req->base("http://server/app/");
+$req->base( URI->new( "http://server/app/" ));
 
 my $res = Test::MockObject::Extends->new( HashObj->new );
 
 my $external_uri         = "http://www.woobling.org/";
 my $internal_uri         = $req->base . "somereq";
+my $relative_uri         = "moose";
+my $rel_with_slash       = "/app/foo";
+my $rel_with_slash_ext   = "/fajkhat";
+my $rel_with_dot_dot     = "../ljaht";
 my $internal_uri_with_id = "${internal_uri}/-/foo";
 
 my $cxt =
   Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
 
+$cxt->set_always( config => {} );
 $cxt->set_always( request  => $req );
 $cxt->set_always( response => $res );
 $cxt->set_false("debug");
 my $sessionid;
 $cxt->mock( sessionid => sub { shift; $sessionid = shift if @_; $sessionid } );
+
+$cxt->setup_session;
 
 can_ok( $m, "session_should_rewrite" );
 ok( $cxt->session_should_rewrite, "sessions should rewrite by default" );
@@ -49,22 +56,26 @@ foreach my $uri (qw{ any http://string/in http://the/world/ }) {
 can_ok( $m, "session_should_rewrite_uri" );
 
 ok(
-    $cxt->session_should_rewrite_uri( URI->new($internal_uri), $internal_uri ),
+    $cxt->session_should_rewrite_uri( $internal_uri ),
     "internal URIs should be rewritten"
 );
 
 ok(
-    !$cxt->session_should_rewrite_uri(
-        URI->new($internal_uri_with_id),
-        $internal_uri_with_id
-    ),
-    "already rewritten internal URIs should not be rewritten again"
+    $cxt->session_should_rewrite_uri( $internal_uri ),
+    "relative URIs should be rewritten"
 );
 
 ok(
-    !$cxt->session_should_rewrite_uri( URI->new($external_uri), $external_uri ),
-    "external URIs should not be rewritten"
+    !$cxt->session_should_rewrite_uri( $internal_uri_with_id),
+    "already rewritten internal URIs should not be rewritten again"
 );
+
+foreach my $uri ( $external_uri, $rel_with_slash_ext, $rel_with_dot_dot ) {
+    ok(
+        !$cxt->session_should_rewrite_uri( $uri ),
+        "external URIs should not be rewritten"
+    );
+}
 
 can_ok( $m, "prepare_action" );
 
@@ -100,28 +111,32 @@ $res->body("foo");
 $cxt->finalize;
 is( $res->body, "foo", "body unchanged with no URLs" );
 
-$res->body( my $body_ext_url = "foo $external_uri blah" );
-$cxt->finalize;
-is( $res->body, $body_ext_url, "external URL stays untouched" );
+foreach my $uri ( $external_uri, $rel_with_slash_ext, $rel_with_dot_dot ) {
+    $res->body( my $body_ext_url = qq{foo <a href="$uri"></a> blah} );
+    $cxt->finalize;
+    is( $res->body, $body_ext_url, "external URL stays untouched" );
+}
 
-$res->body( my $body_internal = "foo $internal_uri bar" );
-$cxt->finalize;
+foreach my $uri ( $internal_uri, $relative_uri, $rel_with_slash ) {
 
-like( $res->body, qr#^foo $internal_uri.* bar$#, "body was rewritten" );
+    $res->body( my $body_internal = qq{foo <a href="$uri"></a> bar} );
+    $cxt->finalize;
 
-my @uris;
-URI::Find->new( sub { push @uris, $_[0] } )->find( \$res->body );
+    like( $res->body, qr#^foo <a href="$uri.*"></a> bar$#, "body was rewritten" );
 
-is( @uris, 1, "one uri was changed" );
-is(
-    "$uris[0]",
-    $cxt->uri_with_sessionid($internal_uri),
-    "rewritten to output of uri_with_sessionid"
-);
+    my @uris = ( $res->body =~ /href="(.*?)"/g );
+
+    is( @uris, 1, "one uri was changed" );
+    is(
+        "$uris[0]",
+        $cxt->uri_with_sessionid($uri),
+        "rewritten to output of uri_with_sessionid"
+    );
+}
 
 $cxt->set_false("session_should_rewrite");
 
-$res->body($body_internal);
+$res->body(my $body_internal = qq{foo <a href="$internal_uri"></a> moose});
 $cxt->finalize;
 is( $res->body, $body_internal,
     "no rewriting when 'session_should_rewrite' returns a false value" );
