@@ -40,6 +40,7 @@ $cxt->set_always( response => $res );
 $cxt->set_false("debug");
 my $sessionid;
 $cxt->mock( sessionid => sub { shift; $sessionid = shift if @_; $sessionid } );
+$cxt->mock( _sessionid_from_uri => sub { shift; $sessionid = shift if @_; $sessionid } );
 
 $cxt->setup_session;
 
@@ -89,17 +90,17 @@ ok( !$cxt->called("sessionid"),
 is( $req->path, "somereq", "req path unchanged" );
 
 $req->path("some_req/-/the session id");
-ok( !$cxt->sessionid, "no session ID yet" );
+ok( !$cxt->get_session_id, "no session ID yet" );
 $cxt->prepare_action;
-is( $cxt->sessionid, "the session id", "session ID was restored from URI" );
+is( $cxt->get_session_id, "the session id", "session ID was restored from URI" );
 is( $req->path,      "some_req",       "request path was rewritten" );
 
 $sessionid = undef;
 $req->path("-/the session id");    # sri's bug
-ok( !$cxt->sessionid, "no session ID yet" );
+ok( !$cxt->get_session_id, "no session ID yet" );
 $cxt->prepare_action;
 is(
-    $cxt->sessionid,
+    $cxt->get_session_id,
     "the session id",
     "session ID was restored from URI with empty path"
 );

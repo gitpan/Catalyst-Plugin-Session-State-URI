@@ -2,17 +2,18 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
-          'PL_FILES' => {},
-          'INSTALLDIRS' => 'site',
           'NAME' => 'Catalyst::Plugin::Session::State::URI',
           'VERSION_FROM' => 'lib/Catalyst/Plugin/Session/State/URI.pm',
           'PREREQ_PM' => {
+                           'Catalyst::Plugin::Session' => '0.01',
+                           'HTML::TokeParser::Simple' => '0',
+                           'MIME::Types' => '0',
                            'Test::MockObject' => '1.01',
-                           'URI' => 0,
-                           'HTML::TokeParser::Simple' => 0,
-                           'URI::QueryParam' => 0,
-                           'MIME::Types' => 0,
-                           'Catalyst::Plugin::Session' => '0.01'
-                         }
+                           'URI' => '0',
+                           'URI::QueryParam' => '0'
+                         },
+          'INSTALLDIRS' => 'site',
+          'EXE_FILES' => [],
+          'PL_FILES' => {}
         )
 ;

@@ -1,5 +1,5 @@
 package Catalyst::Plugin::Session::State::URI;
-use base qw/Catalyst::Plugin::Session::State/;
+use base qw/Catalyst::Plugin::Session::State Class::Accessor::Fast/;
 
 use strict;
 use warnings;
@@ -10,7 +10,14 @@ use NEXT;
 use URI;
 use URI::QueryParam;
 
-our $VERSION = "0.02";
+our $VERSION = "0.03";
+
+__PACKAGE__->mk_accessors("_sessionid_from_uri");
+
+sub get_session_id {
+    my $c = shift;
+    return $c->_sessionid_from_uri;
+}
 
 sub setup_session {
     my $c = shift();
@@ -60,6 +67,14 @@ sub session_should_rewrite {
 
     return $c->config->{session}{rewrite};
 }
+
+sub uri_for {
+    my ( $c, $path, @args ) = @_;
+                
+    return $c->config->{session}{overload_uri_for}
+        ? $c->uri_with_sessionid($c->NEXT::uri_for($path, @args))
+        : $c->NEXT::uri_for($path, @args);
+} 
 
 sub uri_with_sessionid {
     my ( $c, $uri ) = @_;
@@ -126,18 +141,18 @@ sub prepare_action {
     {           # use param style rewriting
 
         if ( my $sid = $c->request->param($param) ) {
-            $c->sessionid($sid);
+            $c->_sessionid_from_uri($sid);
             $c->log->debug(qq/Found sessionid "$sid" in query parameters/)
               if $c->debug;
         }
 
     } else {    # use path style rewriting
 
-        if ( $c->request->path =~ m{^ (?: (.*) / )? -/ (.+) $}x ) {
-            $c->request->path( defined $1 ? $1 : "" );
-            $c->sessionid($2);
-            $c->log->debug(qq/Found sessionid "$2" in uri path/)
+        if ( my ( $path, $sid ) = ( $c->request->path =~ m{^ (?: (.*) / )? -/ (.+) $}x )  ) {
+            $c->request->path( defined($path) ? $path : "" );
+            $c->log->debug(qq/Found sessionid "$sid" in uri path/)
               if $c->debug;
+            $c->_sessionid_from_uri($sid);
         }
 
     }

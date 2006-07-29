@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.03    2006-07-29 19:07
+        - Update to new session state plugin api (get_session_id)
+
 0.02    2006-01-20 17:30
         - Rewriting is optional (gphat)
         - Support relative uri rewriting
