@@ -1,0 +1,41 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.54.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 ddb2027d0e513d7e1cb5be4cad0de992c2c34360 Changes
+SHA1 517c5a35be262198f66acb26f46f591b18c027f1 MANIFEST
+SHA1 b6ef4631311d6a9a44a0b3878787a23536dda396 META.yml
+SHA1 82408de8f7cf0cdc879cd06e2702a45d654243ca Makefile.PL
+SHA1 68626acfd3eb1b12eaf0317eaae81c2f1d184e5c README
+SHA1 f33c78894e3ad0477cd217aeceebb0f9538bfe31 lib/Catalyst/Plugin/Session/State/URI.pm
+SHA1 463770748df1658e5ae6d42ef0c264f92e48748d t/01use.t
+SHA1 86d255a7c9f065a13049108362c949b3e35a4c24 t/02pod.t
+SHA1 e923679a1bbd8eb8f727e46f5906af25de27ec97 t/03podcoverage.t
+SHA1 c3f1f5b0b95e2d4fe02aa4467133f6b4aa4b8429 t/basic.t
+SHA1 80a4c518bae28e3ce97dc16e24f370ca4b25bcab t/lib/Catalyst/Plugin/Test/Errors.pm
+SHA1 3e4ce3d6db700ac9a26b13f98e0818478aecc1c1 t/lib/Catalyst/Plugin/Test/Headers.pm
+SHA1 60d4dd1101b61f401b926589a35e69f6aa8b07b5 t/lib/Catalyst/Plugin/Test/Plugin.pm
+SHA1 3d3b33cc8ed0970cf4cc5c85a29b6065ba41f706 t/lib/TestApp.pm
+SHA1 555e1ef3f5f029e9f26646a736f60c5ef2886b3d t/lib/TestApp/Controller/URI.pm
+SHA1 9777b9aa7057e1e060b854b295a7d43d4b0575af t/lib/TestAppSession.pm
+SHA1 9edd7ca852f34891304bfe003fe98efad81414a7 t/live_uri_for.t
+SHA1 81ac610e8dbeff2a425051a687b8bd5cd2b2ebf4 t/param.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+
+iD8DBQFEzfS3VCwRwOvSdBgRAnenAJoDj+ZgQcwoTc68hHEjNoSlXWRDLwCdE/Au
+6cz2SpdyhhW8rJdiSmhKcMc=
+=QdAw
+-----END PGP SIGNATURE-----

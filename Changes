@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.04
+        - rerelase with proper version dependencies
+
 0.03    2006-07-29 19:07
         - Update to new session state plugin api (get_session_id)
 

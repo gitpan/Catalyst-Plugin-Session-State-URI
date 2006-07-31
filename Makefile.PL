@@ -5,7 +5,7 @@ WriteMakefile
           'NAME' => 'Catalyst::Plugin::Session::State::URI',
           'VERSION_FROM' => 'lib/Catalyst/Plugin/Session/State/URI.pm',
           'PREREQ_PM' => {
-                           'Catalyst::Plugin::Session' => '0.01',
+                           'Catalyst::Plugin::Session' => '0.06',
                            'HTML::TokeParser::Simple' => '0',
                            'MIME::Types' => '0',
                            'Test::MockObject' => '1.01',
@@ -14,6 +14,7 @@ WriteMakefile
                          },
           'INSTALLDIRS' => 'site',
           'EXE_FILES' => [],
+          'SIGN'      => 1,
           'PL_FILES' => {}
         )
 ;
