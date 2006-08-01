@@ -14,12 +14,12 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 ddb2027d0e513d7e1cb5be4cad0de992c2c34360 Changes
-SHA1 517c5a35be262198f66acb26f46f591b18c027f1 MANIFEST
-SHA1 b6ef4631311d6a9a44a0b3878787a23536dda396 META.yml
-SHA1 82408de8f7cf0cdc879cd06e2702a45d654243ca Makefile.PL
-SHA1 68626acfd3eb1b12eaf0317eaae81c2f1d184e5c README
-SHA1 f33c78894e3ad0477cd217aeceebb0f9538bfe31 lib/Catalyst/Plugin/Session/State/URI.pm
+SHA1 82cf7e3e8b5a7ba413cf0f02d0d73780994b5d63 Changes
+SHA1 4c46b86adfb0323c9fff61bdee6e165d7dea7ffa MANIFEST
+SHA1 ff139ca4fcc4b79e231658eee923ec06ab787b37 META.yml
+SHA1 2ccd5e26590aa19ff39ee7de7014a18d0ddcb48e Makefile.PL
+SHA1 4eb85678656dfa6aa93ae533cb56bad0332a1fdf README
+SHA1 7a7fe90e822c404bc4a0bf0c4571d9d37fd7c780 lib/Catalyst/Plugin/Session/State/URI.pm
 SHA1 463770748df1658e5ae6d42ef0c264f92e48748d t/01use.t
 SHA1 86d255a7c9f065a13049108362c949b3e35a4c24 t/02pod.t
 SHA1 e923679a1bbd8eb8f727e46f5906af25de27ec97 t/03podcoverage.t
@@ -35,7 +35,7 @@ SHA1 81ac610e8dbeff2a425051a687b8bd5cd2b2ebf4 t/param.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.1 (Darwin)
 
-iD8DBQFEzfS3VCwRwOvSdBgRAnenAJoDj+ZgQcwoTc68hHEjNoSlXWRDLwCdE/Au
-6cz2SpdyhhW8rJdiSmhKcMc=
-=QdAw
+iD8DBQFEz36SVCwRwOvSdBgRAqf+AJ4x/sXrg+JqjqH6jqpnTOBKCRnYcgCgqfQJ
+sSzvLXRaUGeTv30kHwgAvjY=
+=6DWQ
 -----END PGP SIGNATURE-----

@@ -10,21 +10,30 @@ use NEXT;
 use URI;
 use URI::QueryParam;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 __PACKAGE__->mk_accessors("_sessionid_from_uri");
 
 sub get_session_id {
     my $c = shift;
-    return $c->_sessionid_from_uri;
+    return $c->_sessionid_from_uri || $c->NEXT::get_session_id(@_);
 }
 
 sub setup_session {
     my $c = shift();
 
     $c->NEXT::setup_session(@_);
-    unless ( exists( $c->config->{session}{rewrite} ) ) {
-        $c->config->{session}{rewrite} = 1;
+
+    my %defaults = (
+        rewrite              => 1,
+        no_rewrite_if_cookie => 1,
+    );
+
+    my $config = $c->config->{session} ||= {};
+
+    foreach my $key ( keys %defaults ) {
+        $config->{$key} = $defaults{$key}
+            unless exists $config->{$key};
     }
 }
 
@@ -63,9 +72,36 @@ sub finalize {
 }
 
 sub session_should_rewrite {
-    my $c = shift();
+    my $c = shift;
 
-    return $c->config->{session}{rewrite};
+    return unless $c->config->{session}{rewrite};
+
+    if ( $c->isa("Catalyst::Plugin::Session::State::Cookie")
+        and $c->config->{session}{no_rewrite_if_cookie}
+    ) {
+        return if defined($c->get_session_cookie);
+    }
+
+    return $c->session_should_rewrite_type;
+}
+
+sub session_should_rewrite_type {
+    my $c = shift;
+
+    if ( my $types = $c->config->{session}{rewrite_types} ) {
+        my @req_type = $c->response->content_type; # split
+        foreach my $type ( @$types ) {
+            if ( ref($type) ) {
+                return 1 if $type->( $c, @req_type );
+            } else {
+                return 1 if lc($type) eq $req_type[0];
+            }
+        }
+
+        return;
+    } else {
+        return 1;
+    }
 }
 
 sub uri_for {
@@ -197,15 +233,26 @@ simply embeds the session id into every URI sent to the user.
 This method is consulted by C<finalize>. The body will be rewritten only if it
 returns a true value.
 
-It will read C<$c-E<gt>config-E<gt>{session}{rewrite}> which will be set 1 at first if not defined.
-In the future this may be conditional based on the type of the body, or other
-factors. And it's separate so that you can overload it.
+This method will B<not> return true unless
+C<< $c->config->{session}{rewrite} >> is true (the default). To globally
+disable rewriting simply set this parameter to false.
+
+If C<< $c->config->{session}{no_rewrite_if_cookie} >> is true (the default),
+L<Catalyst::Plugin::Session::State::Cookie> is also in use, and the user agent
+sent a cookie for the sesion then this method will return false.
+
+For compatibility this method will B<not> test the response's content type
+without configuration. If you want to do that you must provide a list of valid
+content types in C<< $c->config->{session}{rewrite_types} >>, or subclass this
+method.
 
 =item session_should_rewrite_uri $uri_text
 
 This method is to determine whether a URI should be rewritten.
 
-It will return true for URIs under C<$c-E<gt>req-E<gt>base>, and it will also use L<MIME::Types> to filter the links which point to png, pdf and etc with the file extension.
+It will return true for URIs under C<$c-E<gt>req-E<gt>base>, and it will also
+use L<MIME::Types> to filter the links which point to png, pdf and etc with the
+file extension.
 
 =item uri_with_sessionid $uri_text
 

@@ -1,16 +1,25 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Catalyst-Plugin-Session-State-URI
-version:      0.04
-version_from: lib/Catalyst/Plugin/Session/State/URI.pm
-installdirs:  site
+---
+name: Catalyst-Plugin-Session-State-URI
+version: 0.05
+author: []
+abstract: |-
+  Saves session IDs by rewriting URIs
+  delivered to the client, and extracting the session ID from requested URIs.
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
-    Catalyst::Plugin::Session:     0.06
-    HTML::TokeParser::Simple:      0
-    MIME::Types:                   0
-    Test::MockObject:              1.01
-    URI:                           0
-    URI::QueryParam:               0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+  Catalyst::Plugin::Session: 0.06
+  HTML::TokeParser::Simple: 0
+  MIME::Types: 0
+  Test::MockObject: 1.01
+  URI: 0
+  URI::QueryParam: 0
+provides:
+  Catalyst::Plugin::Session::State::URI:
+    file: lib/Catalyst/Plugin/Session/State/URI.pm
+    version: 0.05
+generated_by: Module::Build version 0.2801
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

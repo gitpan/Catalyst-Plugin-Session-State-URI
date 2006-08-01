@@ -16,4 +16,4 @@ t/lib/TestApp/Controller/URI.pm
 t/lib/TestAppSession.pm
 t/live_uri_for.t
 t/param.t
-SIGNATURE                                Public-key signature (added by MakeMaker)
+SIGNATURE    Added here by Module::Build

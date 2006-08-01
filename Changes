@@ -1,5 +1,10 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.05
+        - DWIM behavior when using both State::Cookie and State::URI together,
+          through App->config->{session}{no_rewrite_if_cookie}.
+        - Add App->config->{session}{rewrite_types} = [qw/.../] support.
+
 0.04
         - rerelase with proper version dependencies
 

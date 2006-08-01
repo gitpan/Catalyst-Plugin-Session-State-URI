@@ -24,10 +24,19 @@ METHODS
         This method is consulted by "finalize". The body will be rewritten
         only if it returns a true value.
 
-        It will read "$c->config->{session}{rewrite}" which will be set 1 at
-        first if not defined. In the future this may be conditional based on
-        the type of the body, or other factors. And it's separate so that
-        you can overload it.
+        This method will not return true unless
+        "$c->config->{session}{rewrite}" is true (the default). To globally
+        disable rewriting simply set this parameter to false.
+
+        If "$c->config->{session}{no_rewrite_if_cookie}" is true (the
+        default), Catalyst::Plugin::Session::State::Cookie is also in use,
+        and the user agent sent a cookie for the sesion then this method
+        will return false.
+
+        For compatibility this method will not test the response's content
+        type without configuration. If you want to do that you must provide
+        a list of valid content types in
+        "$c->config->{session}{rewrite_types}", or subclass this method.
 
     session_should_rewrite_uri $uri_text
         This method is to determine whether a URI should be rewritten.
@@ -120,9 +129,9 @@ POD ERRORS
     Hey! The above document had some coding errors, which are explained
     below:
 
-    Around line 296:
+    Around line 343:
         '=item' outside of any '=over'
 
-    Around line 310:
+    Around line 357:
         You forgot a '=back' before '=head1'
 
