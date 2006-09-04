@@ -13,7 +13,7 @@ BEGIN { use_ok( $m = "Catalyst::Plugin::Session::State::URI" ) }
 {
     package HashObj;
     use base qw/Class::Accessor/;
-    __PACKAGE__->mk_accessors(qw/body path base/);
+    __PACKAGE__->mk_accessors(qw/body path base content_type/);
 }
 
 my $req = Test::MockObject::Extends->new( HashObj->new );
@@ -31,6 +31,8 @@ $cxt->set_false("debug");
 
 my $sessionid;
 $cxt->mock( sessionid => sub { shift; $sessionid = shift if @_; $sessionid } );
+$cxt->mock( _sessionid_from_uri => sub { shift; $sessionid = shift if @_; $sessionid } );
+$cxt->mock( _sessionid_to_rewrite => sub { shift; $sessionid = shift if @_; $sessionid } );
 
 $sessionid = 'qux';
 my $session_string = $cxt->config->{ session }{ param } . '=' . $sessionid;
@@ -96,6 +98,8 @@ is( $res->body, "foo", "body unchanged with no URLs" );
 $res->body( my $body_ext_url = qq{foo <a href="$external_uri"></a> blah} );
 $cxt->finalize;
 is( $res->body, $body_ext_url, "external URL stays untouched" );
+
+$res->content_type("text/html");
 
 foreach my $uri ( $internal_uri, $relative_uri, $rel_with_slash, $rel_with_dot ) {
 

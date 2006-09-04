@@ -1,5 +1,11 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.06
+        - reintroduce URI::Find based rewriting for non HTML bodies
+        - more robust storage of session id in $c, using the api
+        - rewriting of Location headers during redirects
+        - various refactorings
+
 0.05
         - DWIM behavior when using both State::Cookie and State::URI together,
           through App->config->{session}{no_rewrite_if_cookie}.

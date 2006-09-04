@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 40;
+use Test::More tests => 51;
 use Test::MockObject::Extends;
 use URI;
 
@@ -15,7 +15,7 @@ BEGIN { use_ok( $m = "Catalyst::Plugin::Session::State::URI" ) }
     package HashObj;
     use base qw/Class::Accessor/;
 
-    __PACKAGE__->mk_accessors(qw/body path base/);
+    __PACKAGE__->mk_accessors(qw/body path base content_type location status/);
 }
 
 my $req = Test::MockObject::Extends->new( HashObj->new );
@@ -30,6 +30,8 @@ my $rel_with_slash       = "/app/foo";
 my $rel_with_slash_ext   = "/fajkhat";
 my $rel_with_dot_dot     = "../ljaht";
 my $internal_uri_with_id = "${internal_uri}/-/foo";
+my $uri_to_plaintext     = $req->base . "foo.txt";
+my $uri_to_picture       = $req->base . "foo.png";
 
 my $cxt =
   Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
@@ -41,6 +43,7 @@ $cxt->set_false("debug");
 my $sessionid;
 $cxt->mock( sessionid => sub { shift; $sessionid = shift if @_; $sessionid } );
 $cxt->mock( _sessionid_from_uri => sub { shift; $sessionid = shift if @_; $sessionid } );
+$cxt->mock( _sessionid_to_rewrite => sub { shift; $sessionid = shift if @_; $sessionid } );
 
 $cxt->setup_session;
 
@@ -69,6 +72,16 @@ ok(
 ok(
     !$cxt->session_should_rewrite_uri( $internal_uri_with_id),
     "already rewritten internal URIs should not be rewritten again"
+);
+
+ok(
+    $cxt->session_should_rewrite_uri( $uri_to_plaintext ),
+    "rewrite URI to plain text file"
+);
+
+ok(
+    !$cxt->session_should_rewrite_uri( $uri_to_picture ),
+    "rewrite URI to but not to a png"
 );
 
 foreach my $uri ( $external_uri, $rel_with_slash_ext, $rel_with_dot_dot ) {
@@ -118,18 +131,55 @@ foreach my $uri ( $external_uri, $rel_with_slash_ext, $rel_with_dot_dot ) {
     is( $res->body, $body_ext_url, "external URL stays untouched" );
 }
 
+$res->content_type("text/html");
+
 foreach my $uri ( $internal_uri, $relative_uri, $rel_with_slash ) {
 
     $res->body( my $body_internal = qq{foo <a href="$uri"></a> bar} );
     $cxt->finalize;
 
-    like( $res->body, qr#^foo <a href="$uri.*"></a> bar$#, "body was rewritten" );
+    like( $res->body, qr#^foo <a href="$uri.+"></a> bar$#, "body was rewritten" );
 
     my @uris = ( $res->body =~ /href="(.*?)"/g );
 
     is( @uris, 1, "one uri was changed" );
     is(
         "$uris[0]",
+        $cxt->uri_with_sessionid($uri),
+        "rewritten to output of uri_with_sessionid"
+    );
+}
+
+$res->content_type("text/plain");
+
+foreach my $uri ( $internal_uri ) {
+
+    $res->body( my $body_internal = qq{foo <$uri> bar} );
+    $cxt->finalize;
+
+    like( $res->body, qr#^foo <$uri.+> bar$#, "body was rewritten" );
+
+    my @uris = ( $res->body =~ /<(.*?)>/g );
+
+    is( @uris, 1, "one uri was changed" );
+    is(
+        "$uris[0]",
+        $cxt->uri_with_sessionid($uri),
+        "rewritten to output of uri_with_sessionid"
+    );
+}
+
+$res->body("");
+$res->status(302);
+
+foreach my $uri ( $internal_uri, $relative_uri, $rel_with_slash ) {
+    $res->location( $uri );
+    $cxt->finalize;
+
+    like( $res->location, qr/^$uri.+$/, "location header was rewritten" );
+
+    is(
+        $res->location,
         $cxt->uri_with_sessionid($uri),
         "rewritten to output of uri_with_sessionid"
     );
