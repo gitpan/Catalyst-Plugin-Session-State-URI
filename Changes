@@ -1,5 +1,10 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.07
+        - Fix dependencies (URI::Find was in the Build.PL, but M::B is being
+          phased out so the makefile wasn't regenerated)
+        - Fix tests due to changed behavior in Test::MockObject
+
 0.06
         - reintroduce URI::Find based rewriting for non HTML bodies
         - more robust storage of session id in $c, using the api

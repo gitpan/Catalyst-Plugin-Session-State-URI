@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.54.
+signed via the Module::Signature module, version 0.55.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,12 +14,12 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 f7f4907e9b08dfc86d8f68c3f861c0389f559d71 Changes
-SHA1 517c5a35be262198f66acb26f46f591b18c027f1 MANIFEST
-SHA1 416c8d008438f1592cb72937e8838511bf6124cd META.yml
-SHA1 abe563212614a902330553a2efc956803d02c5d2 Makefile.PL
-SHA1 4eb85678656dfa6aa93ae533cb56bad0332a1fdf README
-SHA1 8aa2b5e22b9f67b42f977b07bfd640694b7feaa6 lib/Catalyst/Plugin/Session/State/URI.pm
+SHA1 790653e5aff54eb9bf08d47532f601b2ae113b75 Changes
+SHA1 c21e886c2a7a1f5f38cb8b6097b37ae9bc9afcb6 MANIFEST
+SHA1 e09ea3ff07f5cd0a895b9218a6d2302aff792348 META.yml
+SHA1 d55f36b7aab29a8ab932517e7731ec873c094c1c Makefile.PL
+SHA1 a5dfb00ae5a18e427bb6237213a14b96ed40f0fb README
+SHA1 1b8e346ab7266f3b85bfbae958bc9d7e3074726e lib/Catalyst/Plugin/Session/State/URI.pm
 SHA1 463770748df1658e5ae6d42ef0c264f92e48748d t/01use.t
 SHA1 86d255a7c9f065a13049108362c949b3e35a4c24 t/02pod.t
 SHA1 e923679a1bbd8eb8f727e46f5906af25de27ec97 t/03podcoverage.t
@@ -27,15 +27,18 @@ SHA1 bcd52ea8ddfd674d618296bdd444745ee8816e96 t/basic.t
 SHA1 80a4c518bae28e3ce97dc16e24f370ca4b25bcab t/lib/Catalyst/Plugin/Test/Errors.pm
 SHA1 3e4ce3d6db700ac9a26b13f98e0818478aecc1c1 t/lib/Catalyst/Plugin/Test/Headers.pm
 SHA1 60d4dd1101b61f401b926589a35e69f6aa8b07b5 t/lib/Catalyst/Plugin/Test/Plugin.pm
+SHA1 0f8b21610c8ce8744c5a946871609cbb4a7d9c74 t/lib/RewritingTestApp.pm
+SHA1 767db1f6af2e794ec5270ab0098e308cc1f19563 t/lib/RewritingTestApp/Controller/URI.pm
 SHA1 3d3b33cc8ed0970cf4cc5c85a29b6065ba41f706 t/lib/TestApp.pm
 SHA1 555e1ef3f5f029e9f26646a736f60c5ef2886b3d t/lib/TestApp/Controller/URI.pm
 SHA1 9777b9aa7057e1e060b854b295a7d43d4b0575af t/lib/TestAppSession.pm
+SHA1 7b7fb26a02c7b38ee3f82f34ac30cf34f7913d3c t/live_rewrite.t
 SHA1 9edd7ca852f34891304bfe003fe98efad81414a7 t/live_uri_for.t
-SHA1 be883a2a4a3452cf4bbf3e31ed1a4b8c19453630 t/param.t
+SHA1 4a8d38b9f5cbae28aca5f2bd66753599408a1ea6 t/param.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (Darwin)
+Version: GnuPG v1.4.5 (Darwin)
 
-iD8DBQFE/Kh3VCwRwOvSdBgRAktcAKC4ljM/uDt13IBiOQcCtJNnGLo/oACgqvYT
-BSIDre+Ry+fdBA+7a1XPKgM=
-=PCZr
+iD8DBQFFL5x5VCwRwOvSdBgRAqTnAKCySFzhAnEijLE/gbfLJeiQtH6rFwCdEsnF
+xkqFHbs75I8/ZDMhAgZB4h0=
+=Vfe5
 -----END PGP SIGNATURE-----

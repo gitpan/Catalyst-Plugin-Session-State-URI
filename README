@@ -33,10 +33,22 @@ METHODS
         and the user agent sent a cookie for the sesion then this method
         will return false.
 
+    session_should_rewrite_body
+        This method just calls "session_should_rewrite_type".
+
+    session_should_rewrite_type
+        Whether or not the content type of the body should be rewritten.
+
         For compatibility this method will not test the response's content
         type without configuration. If you want to do that you must provide
         a list of valid content types in
         "$c->config->{session}{rewrite_types}", or subclass this method.
+
+    session_should_rewrite_redirect
+        Whether or not to rewrite the "Location" header of the response.
+
+        If the status code is a number in the 3xx range then this returns
+        true.
 
     session_should_rewrite_uri $uri_text
         This method is to determine whether a URI should be rewritten.
@@ -45,7 +57,21 @@ METHODS
         use MIME::Types to filter the links which point to png, pdf and etc
         with the file extension.
 
-    uri_with_sessionid $uri_text
+        You are encouraged to override this method if it's logic doesn't
+        suit your setup.
+
+    session_should_rewrite_uri_mime_type $uri_obj
+        A sub test of session_should_rewrite_uri, that checks if the file
+        name's guessed mime type is of a kind we should rewrite URIs to.
+
+        Files which are typically static (images, etc) will thus not be
+        rewritten in order to not get 404s or pass bogus parameters to the
+        server.
+
+        If $uri_obj's path causes MIME::Types to return true for the
+        "isBinary" test then then the URI will not be rewritten.
+
+    uri_with_sessionid $uri_text, [ $sid ]
         By path style rewriting, it will appends "/-/$sessionid" to the uri
         path.
 
@@ -55,6 +81,29 @@ METHODS
         after the uri path.
 
         http://myapp/link -> http://myapp/link?$param=$sessionid
+
+        If $sid is not provided it will default to "$c->sessionid".
+
+    session_rewrite_if_needed
+        Rewrite the response if necessary.
+
+    rewrite_body_with_session_id $sid
+        Calls either "rewrite_html_with_session_id" or
+        "rewrite_text_with_session_id" depending on the content type.
+
+    rewrite_html_with_session_id $sid
+        Rewrites the body using HTML::TokePaser::Simple.
+
+        This method of rewriting also matches relative URIs, and is thus
+        more robust.
+
+    rewrite_text_with_session_id $sid
+        Rewrites the body using URI::Find.
+
+        This method is used when the content does not appear to be HTML.
+
+    rewrite_redirect_with_session_id $sid
+        Rewrites the "Location" header.
 
 EXTENDED METHODS
     prepare_action
@@ -124,14 +173,4 @@ AUTHORS
 COPYRIGHT
     This program is free software, you can redistribute it and/or modify it
     under the same terms as Perl itself.
-
-POD ERRORS
-    Hey! The above document had some coding errors, which are explained
-    below:
-
-    Around line 343:
-        '=item' outside of any '=over'
-
-    Around line 357:
-        You forgot a '=back' before '=head1'
 

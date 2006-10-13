@@ -13,7 +13,7 @@ BEGIN { use_ok( $m = "Catalyst::Plugin::Session::State::URI" ) }
 {
     package HashObj;
     use base qw/Class::Accessor/;
-    __PACKAGE__->mk_accessors(qw/body path base content_type/);
+    __PACKAGE__->mk_accessors(qw/body path base content_type status/);
 }
 
 my $req = Test::MockObject::Extends->new( HashObj->new );

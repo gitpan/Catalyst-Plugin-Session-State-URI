@@ -11,7 +11,7 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
