@@ -1,18 +1,27 @@
---- #YAML:1.0
-name:                Catalyst-Plugin-Session-State-URI
-version:             0.07
-abstract:            ~
-license:             ~
-generated_by:        ExtUtils::MakeMaker version 6.31
-distribution_type:   module
-requires:     
-    Catalyst::Plugin::Session:     0.06
-    HTML::TokeParser::Simple:      0
-    MIME::Types:                   0
-    Test::MockObject:              1.01
-    URI:                           0
-    URI::Find:                     0
-    URI::QueryParam:               0
+---
+abstract: 'Saves session IDs by rewriting URIs'
+author:
+  - 'This module is derived from L<Catalyst::Plugin::Session::FastMmap> code, and'
+distribution_type: module
+generated_by: 'Module::Install version 0.77'
+license: perl
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Catalyst-Plugin-Session-State-URI
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Catalyst::Plugin::Session: 0.06
+  HTML::TokeParser::Simple: 0
+  MIME::Types: 0
+  MRO::Compat: 0
+  Test::MockObject: 1.01
+  URI: 0
+  URI::Find: 0
+  URI::QueryParam: 0
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.08

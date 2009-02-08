@@ -1,18 +1,16 @@
-use ExtUtils::MakeMaker;
-WriteMakefile(
-    'NAME'         => 'Catalyst::Plugin::Session::State::URI',
-    'VERSION_FROM' => 'lib/Catalyst/Plugin/Session/State/URI.pm',
-    'PREREQ_PM'    => {
-        'Catalyst::Plugin::Session' => '0.06',
-        'URI'                       => 0,
-        'URI::QueryParam'           => 0,
-        'URI::Find'                 => 0,
-        'HTML::TokeParser::Simple'  => 0,
-        'MIME::Types'               => 0,
-        'Test::MockObject'          => '1.01',
-    },
-    'INSTALLDIRS' => 'site',
-    'EXE_FILES'   => [],
-    'PL_FILES'    => {},
-    'SIGN'        => 1,
-);
+use inc::Module::Install 0.67;
+
+name 'Catalyst-Plugin-Session-State-URI';
+all_from 'lib/Catalyst/Plugin/Session/State/URI.pm';
+
+requires 'Catalyst::Plugin::Session' => '0.06';
+requires 'URI';
+requires 'URI::QueryParam';
+requires 'URI::Find';
+requires 'HTML::TokeParser::Simple';
+requires 'MIME::Types';
+requires 'Test::MockObject'          => '1.01';
+requires 'MRO::Compat';
+
+auto_install;
+WriteAll;

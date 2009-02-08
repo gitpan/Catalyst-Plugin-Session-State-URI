@@ -6,37 +6,37 @@ use warnings;
 
 use HTML::TokeParser::Simple;
 use MIME::Types;
-use NEXT;
+use MRO::Compat;
 use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = "0.07";
+our $VERSION = '0.08';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
 sub get_session_id {
     my ( $c, @args ) = @_;
-    return $c->_sessionid_from_uri || $c->NEXT::get_session_id(@args);
+    return $c->_sessionid_from_uri || $c->maybe::next::method(@args);
 }
 
 sub set_session_id {
     my ( $c, $sid, @args ) = @_;
     $c->_sessionid_to_rewrite($sid);
-    $c->NEXT::set_session_id($sid, @args);
+    $c->maybe::next::method($sid, @args);
 }
 
 sub delete_session_id {
     my ( $c, @args ) = @_;
     $c->_sessionid_from_uri(undef);
     $c->_sessionid_to_rewrite(undef);
-    $c->NEXT::delete_session_id(@args);
+    $c->maybe::next::method(@args);
 }
 
 sub setup_session {
     my $c = shift();
 
-    $c->NEXT::setup_session(@_);
+    $c->maybe::next::method(@_);
 
     my %defaults = (
         rewrite              => 1,
@@ -56,7 +56,7 @@ sub finalize {
 
     $c->session_rewrite_if_needed;
 
-    return $c->NEXT::finalize(@_);
+    return $c->maybe::next::method(@_);
 }
 
 
@@ -223,8 +223,8 @@ sub uri_for {
     my ( $c, $path, @args ) = @_;
                 
     return $c->config->{session}{overload_uri_for}
-        ? $c->uri_with_sessionid($c->NEXT::uri_for($path, @args))
-        : $c->NEXT::uri_for($path, @args);
+        ? $c->uri_with_sessionid($c->maybe::next::method($path, @args))
+        : $c->maybe::next::method($path, @args);
 } 
 
 sub uri_with_sessionid {
@@ -321,7 +321,7 @@ sub prepare_action {
 
     }
 
-    $c->NEXT::prepare_action(@_);
+    $c->maybe::next::method(@_);
 }
 
 __PACKAGE__
@@ -447,6 +447,10 @@ This method is used when the content does not appear to be HTML.
 
 Rewrites the C<Location> header.
 
+=item uri_with_param_sessionid
+
+=item uri_with_path_sessionid
+
 =back
 
 =head1 EXTENDED METHODS
@@ -463,6 +467,16 @@ rewrite the URI to remove the additional part.
 If C<session_should_rewrite> returns a true value, L<HTML::TokePaser::Simple> is used to
 traverse the body to replace all URLs which get true returned by C<session_should_rewrite_uri> so that they contain
 the session ID.
+
+=item delete_session_id
+
+=item get_session_id
+
+=item set_session_id
+
+=item setup_session
+
+=item uri_for
 
 =back
 
@@ -501,7 +515,7 @@ following logic:
 =item *
 
 URIs that match C</^$base/> are appended with session data (
-C<< $c->NEXT::uri_with_sessionid >>).
+C<< $c->maybe::next::method >>).
 
 =item *
 
@@ -523,6 +537,8 @@ C<HTML::TokeParser::Simple>, C<MIME::Types>.
 This module is derived from L<Catalyst::Plugin::Session::FastMmap> code, and
 has been heavily modified since.
 
+=over 4
+
 =item Andrew Ford
 
 =item Andy Grundman
@@ -536,6 +552,8 @@ has been heavily modified since.
 =item Sebastian Riedel
 
 =item Hu Hailin
+
+=back
 
 =head1 COPYRIGHT
 

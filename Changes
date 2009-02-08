@@ -1,22 +1,27 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
-0.07
+0.08    2009-02-08
+        - Switch from NEXT to MRO::Compat (t0m)
+        - Switch to Module::Install
+        - pod fixes (RT #23749)
+
+0.07    2006-10-13
         - Fix dependencies (URI::Find was in the Build.PL, but M::B is being
           phased out so the makefile wasn't regenerated)
         - Fix tests due to changed behavior in Test::MockObject
 
-0.06
+0.06    2006-09-04
         - reintroduce URI::Find based rewriting for non HTML bodies
         - more robust storage of session id in $c, using the api
         - rewriting of Location headers during redirects
         - various refactorings
 
-0.05
+0.05    2006-08-01
         - DWIM behavior when using both State::Cookie and State::URI together,
           through App->config->{session}{no_rewrite_if_cookie}.
         - Add App->config->{session}{rewrite_types} = [qw/.../] support.
 
-0.04
+0.04    2006-07-31
         - rerelase with proper version dependencies
 
 0.03    2006-07-29 19:07
