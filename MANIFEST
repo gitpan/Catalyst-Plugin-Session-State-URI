@@ -29,3 +29,4 @@ t/lib/TestAppSession.pm
 t/live_rewrite.t
 t/live_uri_for.t
 t/param.t
+t/uri_find_regression_avoid_RT44593.t

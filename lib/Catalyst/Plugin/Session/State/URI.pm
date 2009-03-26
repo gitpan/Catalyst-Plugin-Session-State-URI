@@ -11,7 +11,7 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
@@ -85,7 +85,7 @@ sub rewrite_body_with_session_id {
     if (
         ($c->response->content_type || '') =~ /html/ # XML too?
             or
-        (!$c->response->content_type and $c->response->body =~ /^\s*<[?!]?\s*\w+/ ), # if it looks like html
+        (!$c->response->content_type and $c->response->body =~ /^\s*\w*\s*<[?!]?\s*\w+/ ), # if it looks like html
     ) {
         $c->rewrite_html_with_session_id($sid);
     } else {
@@ -552,6 +552,8 @@ has been heavily modified since.
 =item Sebastian Riedel
 
 =item Hu Hailin
+
+=item Tomas Doran, C<bobtfish@bobtfish.net> (Current maintainer)
 
 =back
 

@@ -3,7 +3,7 @@ abstract: 'Saves session IDs by rewriting URIs'
 author:
   - 'This module is derived from L<Catalyst::Plugin::Session::FastMmap> code, and'
 distribution_type: module
-generated_by: 'Module::Install version 0.77'
+generated_by: 'Module::Install version 0.80'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -24,4 +24,4 @@ requires:
   URI::QueryParam: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.08
+version: 0.09

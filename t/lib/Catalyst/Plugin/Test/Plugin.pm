@@ -15,7 +15,7 @@ sub  prepare {
 
     my $class = shift;
 
-    my $c = $class->NEXT::prepare(@_);
+    my $c = $class->next::method(@_);
     $c->response->header( 'X-Catalyst-Plugin-Setup' => $c->ran_setup );
 
     return $c;

@@ -1,5 +1,9 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.09    2009-03-26
+        - Avoid bug in URI::Find causing test fails (RT#44593)
+        - Remove use of NEXT missed last time from the test suite.
+
 0.08    2009-02-08
         - Switch from NEXT to MRO::Compat (t0m)
         - Switch to Module::Install
