@@ -11,7 +11,7 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
@@ -39,11 +39,20 @@ sub setup_session {
     $c->maybe::next::method(@_);
 
     my %defaults = (
-        rewrite              => 1,
+        rewrite_redirect     => 1,
+        rewrite_body         => 1,
         no_rewrite_if_cookie => 1,
     );
 
     my $config = $c->config->{session} ||= {};
+
+
+    if ( delete $config->{rewrite} ) {
+        $config->{rewrite_redirect} = 1
+            unless exists $config->{rewrite_redirect};
+        $config->{rewrite_body} = 1
+            unless exists $config->{rewrite_body};
+    }
 
     foreach my $key ( keys %defaults ) {
         $config->{$key} = $defaults{$key}
@@ -178,7 +187,8 @@ sub rewrite_redirect_with_session_id {
 sub session_should_rewrite {
     my $c = shift;
 
-    return unless $c->config->{session}{rewrite};
+    return unless $c->config->{session}{rewrite_redirect}
+        ||  $c->config->{session}{rewrite_body};
 
     if ( $c->isa("Catalyst::Plugin::Session::State::Cookie")
         and $c->config->{session}{no_rewrite_if_cookie}
@@ -210,11 +220,13 @@ sub session_should_rewrite_type {
 
 sub session_should_rewrite_body {
     my $c = shift;
+    return unless $c->config->{session}{rewrite_body};
     return $c->session_should_rewrite_type;
 }
 
 sub session_should_rewrite_redirect {
     my $c = shift;
+    return unless $c->config->{session}{rewrite_redirect};
     ($c->response->status || 0) =~ /^\s*3\d\d\s*$/;
 }
 
@@ -332,8 +344,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Plugin::Session::State::URI - Saves session IDs by rewriting URIs
-delivered to the client, and extracting the session ID from requested URIs.
+Catalyst::Plugin::Session::State::URI - Use URIs to pass the session id between requests
 
 =head1 SYNOPSIS
 
@@ -346,11 +357,16 @@ delivered to the client, and extracting the session ID from requested URIs.
 
 =head1 DESCRIPTION
 
-In order for L<Catalyst::Plugin::Session> to work the session ID needs to be
-stored on the client, and the session data needs to be stored on the server.
+In order for L<Catalyst::Plugin::Session> to work the session ID needs
+to be available on each request, and the session data needs to be
+stored on the server.
 
-This plugin cheats and instead of storing the session id on the client, it
-simply embeds the session id into every URI sent to the user.
+This plugin puts the session id into URIs instead of something like a
+cookie.
+
+By default, it rewrites all outgoing URIs, both redirects and in
+outgoing HTML, but you can exercise control over exactly which URIs
+are rewritten.
 
 =head1 METHODS
 
@@ -358,24 +374,29 @@ simply embeds the session id into every URI sent to the user.
 
 =item session_should_rewrite
 
-This method is consulted by C<finalize>. The body will be rewritten only if it
-returns a true value.
+This method is consulted by C<finalize>, and URIs will be rewritten
+only if it returns a true value.
 
-This method will B<not> return true unless
-C<< $c->config->{session}{rewrite} >> is true (the default). To globally
-disable rewriting simply set this parameter to false.
+Rewriting is controlled by the C<< $c->config->{session}{rewrite_body}
+>> and C<< $c->config->{session}{rewrite_redirect} >> config settings,
+both of which default to true.
 
-If C<< $c->config->{session}{no_rewrite_if_cookie} >> is true (the default),
-L<Catalyst::Plugin::Session::State::Cookie> is also in use, and the user agent
-sent a cookie for the sesion then this method will return false.
+To globally disable rewriting simply set these parameters to false.
+
+If C<< $c->config->{session}{no_rewrite_if_cookie} >> is true,
+L<Catalyst::Plugin::Session::State::Cookie> is also in use, and the
+user agent sent a cookie for the sesion then this method will return
+false. This parameter also defaults to true.
 
 =item session_should_rewrite_body
 
-This method just calls C<session_should_rewrite_type>.
+This method checks C<< $c->config->{session}{rewrite_body} >>
+first. If this is true, it then calls C<session_should_rewrite_type>.
 
 =item session_should_rewrite_type
 
-Whether or not the content type of the body should be rewritten.
+This method determines whether or not the body should be rewritten,
+based on its content type.
 
 For compatibility this method will B<not> test the response's content type
 without configuration. If you want to do that you must provide a list of valid
@@ -384,9 +405,12 @@ method.
 
 =item session_should_rewrite_redirect
 
-Whether or not to rewrite the C<Location> header of the response.
+This method determines whether or not to rewrite the C<Location>
+header of the response.
 
-If the status code is a number in the 3xx range then this returns true.
+This method checks C<< $c->config->{session}{rewrite_redirect} >>
+first. If this is true, it then checks if the status code is a number
+in the 3xx range.
 
 =item session_should_rewrite_uri $uri_text
 
@@ -412,11 +436,13 @@ test then then the URI will not be rewritten.
 
 =item uri_with_sessionid $uri_text, [ $sid ]
 
-By path style rewriting, it will appends C</-/$sessionid> to the uri path.
+When using path style rewriting (the default), it will append
+C</-/$sessionid> to the uri path.
 
 http://myapp/link -> http://myapp/link/-/$sessionid
 
-By param style rewriting, it will add a parameter key/value pair after the uri path.
+When using param style rewriting, it will add a parameter key/value
+pair after the uri path.
 
 http://myapp/link -> http://myapp/link?$param=$sessionid
 
@@ -464,9 +490,7 @@ rewrite the URI to remove the additional part.
 
 =item finalize
 
-If C<session_should_rewrite> returns a true value, L<HTML::TokePaser::Simple> is used to
-traverse the body to replace all URLs which get true returned by C<session_should_rewrite_uri> so that they contain
-the session ID.
+Rewrite a redirect or the body HTML as appropriate.
 
 =item delete_session_id
 

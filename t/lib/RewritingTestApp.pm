@@ -12,7 +12,8 @@ __PACKAGE__->config(
     name => __PACKAGE__,
     home => "/",
     session => {
-        rewrite => 1,
+        rewrite_body => 1,
+        rewrite_redirect => 1,
         no_rewrite_if_cookie => 1, # FIXME better name
         rewrite_types => [qw{ text/html }],
     }

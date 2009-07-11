@@ -1,9 +1,13 @@
 ---
-abstract: 'Saves session IDs by rewriting URIs'
+abstract: 'Use URIs to pass the session id between requests'
 author:
   - 'This module is derived from L<Catalyst::Plugin::Session::FastMmap> code, and'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.80'
+generated_by: 'Module::Install version 0.91'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -24,4 +28,5 @@ requires:
   URI::QueryParam: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.09
+  repository: http://dev.catalyst.perl.org/repos/Catalyst/trunk/Catalyst-Plugin-Session-State-URI/
+version: 0.10

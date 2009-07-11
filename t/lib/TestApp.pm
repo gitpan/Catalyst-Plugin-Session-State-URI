@@ -12,7 +12,15 @@ use Catalyst::Utils;
 
 our $VERSION = '0.01';
 
-TestApp->config( name => 'TestApp', root => '/some/dir', session => { param => 'sid', rewrite => 0 } );
+__PACKAGE__->config(
+    name => __PACKAGE__,
+    root => '/some/dir',
+    session => {
+        param => 'sid',
+        rewrite_body => 0,
+        rewrite_redirect => 0,
+    }
+);
 
 TestApp->setup(qw/Session::State::URI/);
 

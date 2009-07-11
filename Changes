@@ -1,5 +1,12 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.10    2009-07-11
+        - Separate rewrite config item into rewrite_body and
+          rewrite_redirect. The old config setting will still
+          work. (Dave Rolsky)
+        - Shut up warnings from test code with newer Catalyst-Runtime.
+          (Dave Rolsky)
+
 0.09    2009-03-26
         - Avoid bug in URI::Find causing test fails (RT#44593)
         - Remove use of NEXT missed last time from the test suite.

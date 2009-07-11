@@ -1,4 +1,4 @@
-use inc::Module::Install 0.67;
+use inc::Module::Install 0.87;
 
 name 'Catalyst-Plugin-Session-State-URI';
 all_from 'lib/Catalyst/Plugin/Session/State/URI.pm';
@@ -13,4 +13,6 @@ requires 'Test::MockObject'          => '1.01';
 requires 'MRO::Compat';
 
 auto_install;
+resources repository => 'http://dev.catalyst.perl.org/repos/Catalyst/trunk/Catalyst-Plugin-Session-State-URI/';
+
 WriteAll;

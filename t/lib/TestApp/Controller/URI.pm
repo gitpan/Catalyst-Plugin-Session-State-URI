@@ -1,7 +1,7 @@
 package TestApp::Controller::URI;
 
 use strict;
-use base 'Catalyst::Base';
+use base 'Catalyst::Controller';
 use Carp;
 $Carp::Verbose = 1;
 
