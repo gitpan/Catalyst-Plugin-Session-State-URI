@@ -2,7 +2,7 @@ package Catalyst::Plugin::Test::Plugin;
 
 use strict;
 
-use base qw/Catalyst::Controller Class::Data::Inheritable/;
+use base qw/Catalyst::Controller/;
 
  __PACKAGE__->mk_classdata('ran_setup');
 

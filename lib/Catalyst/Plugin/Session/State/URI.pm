@@ -11,7 +11,7 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
@@ -264,7 +264,9 @@ sub uri_with_param_sessionid {
 sub uri_with_path_sessionid {
     my ( $c, $uri_obj, $sid ) = @_;
 
-    $uri_obj->path( join( "/-/", $uri_obj->path, $sid ) );
+    ( my $old_path = $uri_obj->path ) =~ s{/$}{};
+
+    $uri_obj->path( join( "/-/", $old_path, $sid ) );
 
     return $uri_obj;
 }

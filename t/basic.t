@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 51;
+use Test::More tests => 53;
 use Test::MockObject::Extends;
 use URI;
 
@@ -50,10 +50,17 @@ $cxt->setup_session;
 can_ok( $m, "session_should_rewrite" );
 ok( $cxt->session_should_rewrite, "sessions should rewrite by default" );
 
-foreach my $uri (qw{ any http://string/in http://the/world/ }) {
+foreach my $uri (qw{ any http://string/in http://the/world }) {
     $sessionid = "foo";
     can_ok( $m, "uri_with_sessionid" );
     is( $cxt->uri_with_sessionid($uri), "${uri}/-/foo" );
+    $sessionid = undef;
+}
+
+{
+    $sessionid = 'bar';
+    is( $cxt->uri_with_sessionid( q{/} ), "/-/bar" );
+    is( $cxt->uri_with_sessionid( q{/trailing/slash/} ), "/trailing/slash/-/bar" );
     $sessionid = undef;
 }
 
