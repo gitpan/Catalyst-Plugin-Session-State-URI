@@ -24,6 +24,7 @@ t/lib/Catalyst/Plugin/Test/Plugin.pm
 t/lib/RewritingTestApp.pm
 t/lib/RewritingTestApp/Controller/URI.pm
 t/lib/TestApp.pm
+t/lib/TestApp/Controller/Root.pm
 t/lib/TestApp/Controller/URI.pm
 t/lib/TestAppSession.pm
 t/live_rewrite.t

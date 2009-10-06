@@ -24,7 +24,7 @@ my $res = Test::MockObject::Extends->new( HashObj->new );
 my $cxt =
   Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
 
-$cxt->set_always( config => { session => { param => 'sid' } } );
+$cxt->set_always( config => { 'Plugin::Session' => { param => 'sid' } } );
 $cxt->set_always( request  => $req );
 $cxt->set_always( response => $res );
 $cxt->set_false("debug");
@@ -35,7 +35,7 @@ $cxt->mock( _sessionid_from_uri => sub { shift; $sessionid = shift if @_; $sessi
 $cxt->mock( _sessionid_to_rewrite => sub { shift; $sessionid = shift if @_; $sessionid } );
 
 $sessionid = 'qux';
-my $session_string = $cxt->config->{ session }{ param } . '=' . $sessionid;
+my $session_string = $cxt->config->{ 'Plugin::Session' }{ param } . '=' . $sessionid;
 
 my $external_uri    = "http://www.woobling.org/";
 my $internal_uri    = $req->base . "action01";

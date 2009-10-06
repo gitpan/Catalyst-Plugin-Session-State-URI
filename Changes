@@ -1,5 +1,11 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.12    2009-10-06
+        - Make tests not warn with latest version of Catalyst.
+        - Prefer session configuration to be in the 'Plugin::Session'
+          config key, but provide backwards compatibility for the
+          deprecated 'session' key.
+
 0.11    2009-07-25
         - When rewriting URIs, avoid doubled slashes. While this is
           mostly a cosmetic problem, if you issue a redirect with a

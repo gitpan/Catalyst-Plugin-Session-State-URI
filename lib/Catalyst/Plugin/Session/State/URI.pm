@@ -11,7 +11,7 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
@@ -33,6 +33,14 @@ sub delete_session_id {
     $c->maybe::next::method(@args);
 }
 
+# FIXME - Can go away when we dep on new Session..
+sub _session_plugin_config {
+    my $c = shift;
+    my $key = $c->config->{'Plugin::Session'} ?
+        'Plugin::Session' : 'session';
+    $c->config->{$key} ||= {};
+}
+
 sub setup_session {
     my $c = shift();
 
@@ -44,7 +52,7 @@ sub setup_session {
         no_rewrite_if_cookie => 1,
     );
 
-    my $config = $c->config->{session} ||= {};
+    my $config = $c->_session_plugin_config;
 
 
     if ( delete $config->{rewrite} ) {
@@ -187,11 +195,12 @@ sub rewrite_redirect_with_session_id {
 sub session_should_rewrite {
     my $c = shift;
 
-    return unless $c->config->{session}{rewrite_redirect}
-        ||  $c->config->{session}{rewrite_body};
+    my $config = $c->_session_plugin_config;
+    return unless $config->{rewrite_redirect}
+        ||  $config->{rewrite_body};
 
     if ( $c->isa("Catalyst::Plugin::Session::State::Cookie")
-        and $c->config->{session}{no_rewrite_if_cookie}
+        and $config->{no_rewrite_if_cookie}
     ) {
         return if defined($c->get_session_cookie);
     }
@@ -202,7 +211,7 @@ sub session_should_rewrite {
 sub session_should_rewrite_type {
     my $c = shift;
 
-    if ( my $types = $c->config->{session}{rewrite_types} ) {
+    if ( my $types = $c->_session_plugin_config->{rewrite_types} ) {
         my @req_type = $c->response->content_type; # split
         foreach my $type ( @$types ) {
             if ( ref($type) ) {
@@ -220,13 +229,13 @@ sub session_should_rewrite_type {
 
 sub session_should_rewrite_body {
     my $c = shift;
-    return unless $c->config->{session}{rewrite_body};
+    return unless $c->_session_plugin_config->{rewrite_body};
     return $c->session_should_rewrite_type;
 }
 
 sub session_should_rewrite_redirect {
     my $c = shift;
-    return unless $c->config->{session}{rewrite_redirect};
+    return unless $c->_session_plugin_config->{rewrite_redirect};
     ($c->response->status || 0) =~ /^\s*3\d\d\s*$/;
 }
 
@@ -234,7 +243,7 @@ sub session_should_rewrite_redirect {
 sub uri_for {
     my ( $c, $path, @args ) = @_;
                 
-    return $c->config->{session}{overload_uri_for}
+    return $c->_session_plugin_config->{overload_uri_for}
         ? $c->uri_with_sessionid($c->maybe::next::method($path, @args))
         : $c->maybe::next::method($path, @args);
 } 
@@ -246,7 +255,7 @@ sub uri_with_sessionid {
 
     my $uri_obj = eval { URI->new($uri) } || return $uri;
 
-    return $c->config->{session}{param}
+    return $c->_session_plugin_config->{param}
       ? $c->uri_with_param_sessionid($uri_obj, $sid)
       : $c->uri_with_path_sessionid($uri_obj, $sid);
 }
@@ -254,7 +263,7 @@ sub uri_with_sessionid {
 sub uri_with_param_sessionid {
     my ( $c, $uri_obj, $sid ) = @_;
 
-    my $param_name = $c->config->{session}{param};
+    my $param_name = $c->_session_plugin_config->{param};
 
     $uri_obj->query_param( $param_name => $sid );
 
@@ -283,7 +292,7 @@ sub session_should_rewrite_uri {
 
     return unless $c->session_should_rewrite_uri_mime_type($rel);
 
-    if ( my $param = $c->config->{session}{param} )
+    if ( my $param = $c->_session_plugin_config->{param} )
     {    # use param style rewriting
 
         # if the URI query string doesn't contain $param
@@ -315,7 +324,7 @@ sub session_should_rewrite_uri_mime_type {
 sub prepare_action {
     my $c = shift;
 
-    if ( my $param = $c->config->{session}{param} )
+    if ( my $param = $c->_session_plugin_config->{param} )
     {           # use param style rewriting
 
         if ( my $sid = $c->request->param($param) ) {
@@ -353,9 +362,9 @@ Catalyst::Plugin::Session::State::URI - Use URIs to pass the session id between 
     use Catalyst qw/Session Session::State::URI Session::Store::Foo/;
 
     # If you want the param style rewriting, set the parameter
-    MyApp->config->{session} = {
+    MyApp->config('Plugin::Session' => {
         param   => 'sessionid', # or whatever you like
-    };
+    });
 
 =head1 DESCRIPTION
 
@@ -379,20 +388,20 @@ are rewritten.
 This method is consulted by C<finalize>, and URIs will be rewritten
 only if it returns a true value.
 
-Rewriting is controlled by the C<< $c->config->{session}{rewrite_body}
->> and C<< $c->config->{session}{rewrite_redirect} >> config settings,
+Rewriting is controlled by the C<< $c->config('Plugin::Session' => { rewrite_body => $val })
+>> and C<< $c->config('Plugin::Session' => { rewrite_redirect => $val }) >> config settings,
 both of which default to true.
 
 To globally disable rewriting simply set these parameters to false.
 
-If C<< $c->config->{session}{no_rewrite_if_cookie} >> is true,
+If C<< $c->config('Plugin::Session' => { no_rewrite_if_cookie => 1 }) >>,
 L<Catalyst::Plugin::Session::State::Cookie> is also in use, and the
 user agent sent a cookie for the sesion then this method will return
 false. This parameter also defaults to true.
 
 =item session_should_rewrite_body
 
-This method checks C<< $c->config->{session}{rewrite_body} >>
+This method checks C<< $c->config('Plugin::Session' => {rewrite_body => $val}) >>
 first. If this is true, it then calls C<session_should_rewrite_type>.
 
 =item session_should_rewrite_type
@@ -402,7 +411,7 @@ based on its content type.
 
 For compatibility this method will B<not> test the response's content type
 without configuration. If you want to do that you must provide a list of valid
-content types in C<< $c->config->{session}{rewrite_types} >>, or subclass this
+content types in C<< $c->config->{'Plugin::Session'}{rewrite_types} >>, or subclass this
 method.
 
 =item session_should_rewrite_redirect
@@ -570,6 +579,8 @@ has been heavily modified since.
 =item Andy Grundman
 
 =item Christian Hansen
+
+=item Dave Rolsky
 
 =item Yuval Kogman, C<nothingmuch@woobling.org>
 
