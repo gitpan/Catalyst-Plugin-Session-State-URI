@@ -23,8 +23,15 @@ my $res = Test::MockObject::Extends->new( HashObj->new );
 
 my $uri         = "http://www.woobling.org/";
 
-my $cxt =
-  Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
+{
+    package MockCtx;
+    use base qw/
+        Catalyst::Plugin::Session
+        Catalyst::Plugin::Session::State::URI
+    /;
+}
+
+my $cxt = Test::MockObject::Extends->new("MockCtx");
 
 $cxt->set_always( config => {} );
 $cxt->set_always( request  => $req );

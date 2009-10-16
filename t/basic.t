@@ -33,8 +33,15 @@ my $internal_uri_with_id = "${internal_uri}/-/foo";
 my $uri_to_plaintext     = $req->base . "foo.txt";
 my $uri_to_picture       = $req->base . "foo.png";
 
-my $cxt =
-  Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
+{
+    package MockCtx;
+    use base qw/
+        Catalyst::Plugin::Session
+        Catalyst::Plugin::Session::State::URI
+    /;
+}
+
+my $cxt = Test::MockObject::Extends->new("MockCtx");
 
 $cxt->set_always( config => {} );
 $cxt->set_always( request  => $req );

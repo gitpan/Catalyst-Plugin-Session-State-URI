@@ -1,9 +1,6 @@
 package Catalyst::Plugin::Session::State::URI;
-use base qw/Catalyst::Plugin::Session::State Class::Accessor::Fast/;
 
-use strict;
-use warnings;
-
+use Moose;
 use HTML::TokeParser::Simple;
 use MIME::Types;
 use MRO::Compat;
@@ -11,7 +8,12 @@ use URI;
 use URI::Find;
 use URI::QueryParam;
 
-our $VERSION = '0.12';
+use namespace::clean -except => 'meta';
+
+our $VERSION = '0.13';
+
+extends 'Catalyst::Plugin::Session::State';
+with 'MooseX::Emulate::Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors(qw/_sessionid_from_uri _sessionid_to_rewrite/);
 
@@ -31,14 +33,6 @@ sub delete_session_id {
     $c->_sessionid_from_uri(undef);
     $c->_sessionid_to_rewrite(undef);
     $c->maybe::next::method(@args);
-}
-
-# FIXME - Can go away when we dep on new Session..
-sub _session_plugin_config {
-    my $c = shift;
-    my $key = $c->config->{'Plugin::Session'} ?
-        'Plugin::Session' : 'session';
-    $c->config->{$key} ||= {};
 }
 
 sub setup_session {
@@ -155,13 +149,13 @@ sub rewrite_text_with_session_id {
     my ( $c, $sid ) = @_;
 
     my $body = $c->response->body || return;
-   
+
     $c->log->debug("Rewriting plain body with URI::Find")
         if $c->debug;
 
     URI::Find->new(sub {
         my ( $uri, $orig_uri ) = @_;
-        
+
         if ( $c->session_should_rewrite_uri($uri) ) {
             my $rewritten = $c->uri_with_sessionid($uri, $sid);
             if ( $orig_uri =~ s/\Q$uri/$rewritten/ ) {
@@ -184,7 +178,7 @@ sub rewrite_redirect_with_session_id {
     my ( $c, $sid ) = @_;
 
     my $location = $c->response->location || return;
-    
+
     $c->log->debug("Rewriting location header")
         if $c->debug;
 
@@ -242,11 +236,11 @@ sub session_should_rewrite_redirect {
 
 sub uri_for {
     my ( $c, $path, @args ) = @_;
-                
+
     return $c->_session_plugin_config->{overload_uri_for}
         ? $c->uri_with_sessionid($c->maybe::next::method($path, @args))
         : $c->maybe::next::method($path, @args);
-} 
+}
 
 sub uri_with_sessionid {
     my ( $c, $uri, $sid ) = @_;
@@ -284,10 +278,10 @@ sub session_should_rewrite_uri {
     my ( $c, $uri_text ) = @_;
 
     my $uri_obj = eval { URI->new($uri_text) } || return;
-    
+
     # ignore the url outside
     my $rel = $uri_obj->abs( $c->request->base );
-    
+
     return unless index( $rel, $c->request->base ) == 0;
 
     return unless $c->session_should_rewrite_uri_mime_type($rel);
@@ -312,7 +306,7 @@ sub session_should_rewrite_uri_mime_type {
     # ignore media type such as gif, pdf and etc
     if ( $uri->path =~ m#\.(\w+)(?:\?|$)# ) {
         my $mt = new MIME::Types->mimeTypeOf($1);
-        
+
         if ( ref $mt ) {
             return if $mt->isBinary;
         }
@@ -591,6 +585,8 @@ has been heavily modified since.
 =item Hu Hailin
 
 =item Tomas Doran, C<bobtfish@bobtfish.net> (Current maintainer)
+
+=item Florian Ragwitz C<rafl@debian.org>
 
 =back
 

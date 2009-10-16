@@ -21,8 +21,15 @@ $req->base( URI->new( "http://myapp/" ) );
 
 my $res = Test::MockObject::Extends->new( HashObj->new );
 
-my $cxt =
-  Test::MockObject::Extends->new("Catalyst::Plugin::Session::State::URI");
+{
+    package MockCtx;
+    use base qw/
+        Catalyst::Plugin::Session
+        Catalyst::Plugin::Session::State::URI
+    /;
+}
+
+my $cxt = Test::MockObject::Extends->new("MockCtx");
 
 $cxt->set_always( config => { 'Plugin::Session' => { param => 'sid' } } );
 $cxt->set_always( request  => $req );

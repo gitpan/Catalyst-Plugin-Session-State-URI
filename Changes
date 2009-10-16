@@ -1,5 +1,9 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.13    2009-10-16
+        - Port to new session config key.
+        - Port to Moose.
+
 0.12    2009-10-06
         - Make tests not warn with latest version of Catalyst.
         - Prefer session configuration to be in the 'Plugin::Session'
