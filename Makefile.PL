@@ -15,6 +15,8 @@ requires 'namespace::clean';
 requires 'Moose';
 requires 'MooseX::Emulate::Class::Accessor::Fast';
 
+test_requires 'Class::Data::Inheritable';
+
 auto_install;
 resources repository => 'http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Plugin-Session-State-URI/';
 

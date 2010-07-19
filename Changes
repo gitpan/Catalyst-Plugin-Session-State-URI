@@ -1,5 +1,12 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.14    2010-07-19
+        - Fix behaviour when debug is turned on by wrapping prepare_path
+          rather than prepare_action (RT#56753).
+        - Fix warning about test plugin inheriting from Catalyst::Component.
+        - Fix for loading the session ID with a cookie for some actions
+          and Session::State::URI for others (RT#57620)
+
 0.13    2009-10-16
         - Port to new session config key.
         - Port to Moose.

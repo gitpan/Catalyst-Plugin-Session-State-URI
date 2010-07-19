@@ -1,10 +1,9 @@
 package Catalyst::Plugin::Test::Plugin;
 
 use strict;
+use base qw/Class::Data::Inheritable/;
 
-use base qw/Catalyst::Controller/;
-
- __PACKAGE__->mk_classdata('ran_setup');
+__PACKAGE__->mk_classdata('ran_setup');
 
 sub setup {
    my $c = shift;

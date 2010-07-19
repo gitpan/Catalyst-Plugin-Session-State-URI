@@ -41,7 +41,7 @@ $cxt->set_false("debug");
 $cxt->setup_session;
 
 $req->path("-/the session id");    # sri's bug
-$cxt->prepare_action;
+$cxt->prepare_path;
 
 $res->body( my $body_ext_url = qq{foo <a href="$uri"></a> blah} );
 

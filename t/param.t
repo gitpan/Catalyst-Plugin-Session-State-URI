@@ -94,7 +94,7 @@ ok(
     "binary media type should not be rewritten"
 );
 
-can_ok( $m, "prepare_action" );
+can_ok( $m, "prepare_path" );
 
 can_ok( $m, "finalize" );
 

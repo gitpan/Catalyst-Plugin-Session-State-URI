@@ -10,7 +10,7 @@ use URI::QueryParam;
 
 use namespace::clean -except => 'meta';
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 extends 'Catalyst::Plugin::Session::State';
 with 'MooseX::Emulate::Class::Accessor::Fast';
@@ -304,25 +304,25 @@ sub session_should_rewrite_uri_mime_type {
     my ( $c, $uri ) = @_;
 
     # ignore media type such as gif, pdf and etc
-    if ( $uri->path =~ m#\.(\w+)(?:\?|$)# ) {
-        my $mt = new MIME::Types->mimeTypeOf($1);
-
-        if ( ref $mt ) {
-            return if $mt->isBinary;
-        }
+    if ( my ($ext) = $uri->path =~ m#\.(\w+)(?:\?|$)# ) {
+        my $mt = MIME::Types->new->mimeTypeOf($ext);
+        return if ref $mt && $mt->isBinary;
     }
 
     return 1;
 }
 
-sub prepare_action {
+sub prepare_path {
     my $c = shift;
+
+    $c->maybe::next::method(@_);
 
     if ( my $param = $c->_session_plugin_config->{param} )
     {           # use param style rewriting
 
         if ( my $sid = $c->request->param($param) ) {
             $c->_sessionid_from_uri($sid);
+            $c->_tried_loading_session_id(0);
             $c->log->debug(qq/Found sessionid "$sid" in query parameters/)
               if $c->debug;
         }
@@ -334,11 +334,10 @@ sub prepare_action {
             $c->log->debug(qq/Found sessionid "$sid" in uri path/)
               if $c->debug;
             $c->_sessionid_from_uri($sid);
+            $c->_tried_loading_session_id(0);
         }
 
     }
-
-    $c->maybe::next::method(@_);
 }
 
 __PACKAGE__
@@ -488,7 +487,7 @@ Rewrites the C<Location> header.
 
 =over 4
 
-=item prepare_action
+=item prepare_path
 
 Will restore the session if the request URI is formatted accordingly, and
 rewrite the URI to remove the additional part.
@@ -534,7 +533,7 @@ to see make some of these problems less dangerous.
 To exclude some sections of your application, like a goodbye page (see
 L</CAVEATS>) you should make extend the C<session_should_rewrite_uri> method to
 return true if the URI does not point to the goodbye page, extend
-C<prepare_action> to not rewrite URIs that match C</-/> (so that external URIs
+C<prepare_path> to not rewrite URIs that match C</-/> (so that external URIs
 with that in their path as a parameter to the goodbye page will not be
 destroyed) and finally extend C<uri_with_sessionid> to rewrite URIs with the
 following logic:

@@ -105,12 +105,12 @@ foreach my $uri ( $external_uri, $rel_with_slash_ext, $rel_with_dot_dot ) {
     );
 }
 
-can_ok( $m, "prepare_action" );
+can_ok( $m, "prepare_path" );
 
 $cxt->clear;
 $req->path("somereq");
 
-$cxt->prepare_action;
+$cxt->prepare_path;
 ok( !$cxt->called("sessionid"),
     "didn't try setting session ID when there was nothing to set it by" );
 
@@ -118,14 +118,14 @@ is( $req->path, "somereq", "req path unchanged" );
 
 $req->path("some_req/-/the session id");
 ok( !$cxt->get_session_id, "no session ID yet" );
-$cxt->prepare_action;
+$cxt->prepare_path;
 is( $cxt->get_session_id, "the session id", "session ID was restored from URI" );
 is( $req->path,      "some_req",       "request path was rewritten" );
 
 $sessionid = undef;
 $req->path("-/the session id");    # sri's bug
 ok( !$cxt->get_session_id, "no session ID yet" );
-$cxt->prepare_action;
+$cxt->prepare_path;
 is(
     $cxt->get_session_id,
     "the session id",
