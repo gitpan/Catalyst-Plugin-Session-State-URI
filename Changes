@@ -1,5 +1,9 @@
 Revision history for Perl extension Catalyst::Plugin::Session::State::URI
 
+0.15   2010-09-23
+        - Read from $req->query_parameters rather than $req->parameters
+          in prepare_path to avoid race condition with POST requests with body
+
 0.14    2010-07-19
         - Fix behaviour when debug is turned on by wrapping prepare_path
           rather than prepare_action (RT#56753).

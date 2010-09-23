@@ -26,6 +26,12 @@ sub param : Local {
     $c->res->body( $c->uri_for("/foo/bar", { param => "value" } ) );
 }
 
+sub body_param : Local {
+    my ( $self, $c ) = @_;
+    my $param_scalar = $c->req->body_parameters->{'body_param'};
+    $c->res->body( $c->uri_for("/foo/bar", { param => $param_scalar } ) );
+}
+
 sub arg_param : Local {
     my ( $self, $c ) = @_;
     $c->res->body( $c->uri_for("/foo/bar", "arg", { param => "value" } ) );

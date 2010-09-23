@@ -28,6 +28,7 @@ t/lib/TestApp.pm
 t/lib/TestApp/Controller/Root.pm
 t/lib/TestApp/Controller/URI.pm
 t/lib/TestAppSession.pm
+t/live_post.t
 t/live_rewrite.t
 t/live_uri_for.t
 t/param.t

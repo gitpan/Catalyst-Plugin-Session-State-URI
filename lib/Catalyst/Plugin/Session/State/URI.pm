@@ -10,7 +10,7 @@ use URI::QueryParam;
 
 use namespace::clean -except => 'meta';
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 extends 'Catalyst::Plugin::Session::State';
 with 'MooseX::Emulate::Class::Accessor::Fast';
@@ -320,7 +320,7 @@ sub prepare_path {
     if ( my $param = $c->_session_plugin_config->{param} )
     {           # use param style rewriting
 
-        if ( my $sid = $c->request->param($param) ) {
+        if ( my $sid = $c->request->query_parameters->{$param} ) {
             $c->_sessionid_from_uri($sid);
             $c->_tried_loading_session_id(0);
             $c->log->debug(qq/Found sessionid "$sid" in query parameters/)
